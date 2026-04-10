@@ -8,4 +8,4 @@ ph=7.8 + 2*tol;
 khcz=7;
 thin_handle=true;
 match_handle=true;
-profile_path = "profiles/MD-CLASSIC.dxf"
+profile_path = "profiles/MD-CLASSIC.dxf";

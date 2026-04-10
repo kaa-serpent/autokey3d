@@ -1,0 +1,5 @@
+# AutoKey3D UI dependencies
+# Install with: pip install -r requirements.txt
+
+# Image handling for SVG thumbnail display (Inkscape does the SVG→PNG conversion)
+Pillow>=10.0.0
