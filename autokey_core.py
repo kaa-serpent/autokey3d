@@ -290,7 +290,15 @@ def _svg_path_to_polylines(d):
 
 
 def _svg_file_to_polylines(svg_path):
-    """Extract all <path> elements from an SVG as Y-flipped polylines."""
+    """
+    Extract all <path> elements from an SVG as Y-flipped polylines, normalised
+    so that the overall bounding box starts at (0, 0).
+
+    The normalisation ensures that regardless of where the profile shape sits on
+    the SVG canvas, the DXF output always starts at the origin.  key.scad
+    expects the profile to begin near (0, 0) so that after resize() the blade
+    aligns with the handle connector.
+    """
     tree = ET.parse(svg_path)
     root = tree.getroot()
     h_str = root.get('height', '100')
@@ -303,6 +311,14 @@ def _svg_file_to_polylines(svg_path):
             if d:
                 for poly in _svg_path_to_polylines(d):
                     polylines.append([(px, h - py) for px, py in poly])
+
+    if polylines:
+        all_x = [px for poly in polylines for px, _ in poly]
+        all_y = [py for poly in polylines for _, py in poly]
+        x_min, y_min = min(all_x), min(all_y)
+        polylines = [[(px - x_min, py - y_min) for px, py in poly]
+                     for poly in polylines]
+
     return polylines
 
 
