@@ -18,7 +18,7 @@ import uuid
 from flask import Flask, jsonify, redirect, render_template, request, send_file
 
 import autokey_core
-from ui.profile_index import ProfileIndex
+from profile_index import ProfileIndex
 
 BASE_DIR = os.path.dirname(os.path.realpath(__file__))
 

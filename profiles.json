@@ -11,7 +11,8 @@
       "khcx": null,
       "khcz": null,
       "thin_handle": false,
-      "match_handle": false
+      "match_handle": false,
+      "default_system": "AB-E20"
     },
     {
       "name": "AB-AB74",
@@ -50,7 +51,8 @@
       "khcx": 2.5,
       "khcz": null,
       "thin_handle": false,
-      "match_handle": false
+      "match_handle": false,
+      "default_system": "AB-E20"
     },
     {
       "name": "AB-TS5000",
@@ -63,7 +65,8 @@
       "khcx": null,
       "khcz": null,
       "thin_handle": false,
-      "match_handle": false
+      "match_handle": false,
+      "default_system": "AB-TS5000"
     },
     {
       "name": "AB-V14",
@@ -76,7 +79,8 @@
       "khcx": null,
       "khcz": null,
       "thin_handle": false,
-      "match_handle": false
+      "match_handle": false,
+      "default_system": "AB-V14"
     },
     {
       "name": "BK-BK1",
@@ -89,7 +93,8 @@
       "khcx": null,
       "khcz": null,
       "thin_handle": false,
-      "match_handle": false
+      "match_handle": false,
+      "default_system": "BK-PZ88"
     },
     {
       "name": "BK-Serie-2000-Kaskade-Unbekannt",
@@ -102,7 +107,8 @@
       "khcx": null,
       "khcz": null,
       "thin_handle": false,
-      "match_handle": false
+      "match_handle": false,
+      "default_system": "BK-Serie-2000-6Stift"
     },
     {
       "name": "CE-CE41",
@@ -115,7 +121,8 @@
       "khcx": null,
       "khcz": null,
       "thin_handle": false,
-      "match_handle": false
+      "match_handle": false,
+      "default_system": "CE-810"
     },
     {
       "name": "DM-X",
@@ -141,7 +148,8 @@
       "khcx": null,
       "khcz": 7.0,
       "thin_handle": true,
-      "match_handle": true
+      "match_handle": true,
+      "default_system": "MD-BIAX"
     },
     {
       "name": "MD-CLASSIC",
@@ -154,7 +162,8 @@
       "khcx": null,
       "khcz": 7.0,
       "thin_handle": true,
-      "match_handle": true
+      "match_handle": true,
+      "default_system": "MD-CLASSIC"
     },
     {
       "name": "ZISK6",
@@ -167,7 +176,8 @@
       "khcx": null,
       "khcz": null,
       "thin_handle": false,
-      "match_handle": false
+      "match_handle": false,
+      "default_system": "ZISK6"
     },
     {
       "name": "evvatest",
