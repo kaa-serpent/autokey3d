@@ -1,0 +1,11 @@
+services:
+  autokey3d:
+    build: .
+    ports:
+      - "5000:5000"
+    volumes:
+      # Bind-mount the project directory so that profiles, definitions, and
+      # profiles.json written by the web UI persist on the host across restarts.
+      # The Python packages live at /venv inside the container and are NOT
+      # shadowed by this mount.
+      - .:/app

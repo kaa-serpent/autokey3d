@@ -6,4 +6,4 @@ tol = 0.2;
 ph=9.5 + 2*tol;
 
 khcx=2.3;
-profile_path = "profiles/DM-X.dxf"
+profile_path = "profiles/DM-X.dxf";

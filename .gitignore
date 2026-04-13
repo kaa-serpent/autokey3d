@@ -1,3 +1,6 @@
+venv/
+__pycache__/
+*.pyc
 branding/branding.svg
 branding/branding.eps
 branding/branding.dxf

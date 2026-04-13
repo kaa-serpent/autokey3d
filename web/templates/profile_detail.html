@@ -1,0 +1,213 @@
+{% extends "base.html" %}
+
+{% block title %}{{ profile.name }} — AutoKey 3D{% endblock %}
+
+{% block content %}
+<div class="page-header">
+  <div class="container d-flex align-items-center justify-content-between flex-wrap gap-2">
+    <div class="d-flex align-items-center gap-3">
+      <a href="/profiles" class="btn btn-outline-secondary btn-sm">
+        <i class="bi bi-arrow-left me-1"></i>Profiles
+      </a>
+      <div>
+        <h1>{{ profile.name }}</h1>
+        <p class="text-muted mb-0">Keyway profile</p>
+      </div>
+    </div>
+    <div class="d-flex gap-2" id="action-btns">
+      <a href="/?profile={{ profile.name }}" class="btn btn-success btn-sm">
+        <i class="bi bi-gear-fill me-1"></i>Generate key
+      </a>
+      <button id="edit-btn" class="btn btn-outline-primary btn-sm" onclick="enterEdit()">
+        <i class="bi bi-pencil me-1"></i>Edit
+      </button>
+    </div>
+    <div class="d-flex gap-2 d-none" id="save-btns">
+      <button class="btn btn-primary btn-sm" onclick="saveProfile()">
+        <i class="bi bi-check-lg me-1"></i>Save
+      </button>
+      <button class="btn btn-outline-secondary btn-sm" onclick="cancelEdit()">
+        Cancel
+      </button>
+    </div>
+  </div>
+</div>
+
+<div class="container">
+  <div id="alert-box"></div>
+
+  <div class="row g-4">
+    <!-- Left: thumbnail -->
+    <div class="col-md-4 col-lg-3">
+      <div class="card text-center p-3">
+        <img src="/thumbnails/{{ profile.name }}" alt="{{ profile.name }}"
+             class="img-fluid mx-auto d-block"
+             style="max-height: 200px; object-fit: contain;"
+             onerror="this.replaceWith(document.createTextNode('No preview'))">
+        <div class="mt-2 text-muted small">{{ profile.svg_path }}</div>
+      </div>
+    </div>
+
+    <!-- Right: parameters -->
+    <div class="col-md-8 col-lg-9">
+      <div class="card">
+        <div class="card-header fw-semibold">Parameters</div>
+        <div class="card-body" id="params-card">
+
+          <!-- VIEW MODE -->
+          <div class="view-mode" id="view-pane">
+            <dl class="row params mb-0">
+              <dt class="col-sm-4">Tolerance (tol)</dt>
+              <dd class="col-sm-8" id="v-tol">{{ profile.tol }}</dd>
+
+              <dt class="col-sm-4">Height base (ph_base)</dt>
+              <dd class="col-sm-8" id="v-ph_base">{{ profile.ph_base }} mm</dd>
+
+              <dt class="col-sm-4">Height includes tol?</dt>
+              <dd class="col-sm-8">
+                {% if profile.ph_has_tol %}
+                  <span class="badge badge-bool-true">ph = ph_base + 2·tol</span>
+                {% else %}
+                  <span class="badge badge-bool-false">ph = ph_base (fixed)</span>
+                {% endif %}
+              </dd>
+
+              <dt class="col-sm-4">Handle connector X (khcx)</dt>
+              <dd class="col-sm-8" id="v-khcx">{{ profile.khcx if profile.khcx is not none else '—' }}</dd>
+
+              <dt class="col-sm-4">Handle connector Z (khcz)</dt>
+              <dd class="col-sm-8" id="v-khcz">{{ profile.khcz if profile.khcz is not none else '—' }}</dd>
+
+              <dt class="col-sm-4">Thin handle</dt>
+              <dd class="col-sm-8" id="v-thin_handle">
+                <span class="badge {{ 'badge-bool-true' if profile.thin_handle else 'badge-bool-false' }}">
+                  {{ 'Yes' if profile.thin_handle else 'No' }}
+                </span>
+              </dd>
+
+              <dt class="col-sm-4">Match connector</dt>
+              <dd class="col-sm-8" id="v-match_handle">
+                <span class="badge {{ 'badge-bool-true' if profile.match_handle else 'badge-bool-false' }}">
+                  {{ 'Yes' if profile.match_handle else 'No' }}
+                </span>
+              </dd>
+
+              <dt class="col-sm-4">Default system</dt>
+              <dd class="col-sm-8" id="v-default_system">
+                {% if profile.default_system %}
+                  <a href="/system/{{ profile.default_system }}">{{ profile.default_system }}</a>
+                {% else %}
+                  <span class="text-muted">None</span>
+                {% endif %}
+              </dd>
+            </dl>
+          </div>
+
+          <!-- EDIT MODE (hidden initially) -->
+          <div class="edit-mode d-none" id="edit-pane">
+            <div class="row g-3">
+              <div class="col-sm-6">
+                <label class="form-label">Tolerance (tol)</label>
+                <input id="e-tol" type="number" step="0.01" class="form-control"
+                       value="{{ profile.tol }}">
+              </div>
+              <div class="col-sm-6">
+                <label class="form-label">Height base (ph_base) <span class="text-muted small">mm</span></label>
+                <input id="e-ph_base" type="number" step="0.01" class="form-control"
+                       value="{{ profile.ph_base }}">
+              </div>
+              <div class="col-sm-6">
+                <label class="form-label">Handle connector X (khcx) <span class="text-muted small">optional</span></label>
+                <input id="e-khcx" type="number" step="0.01" class="form-control"
+                       value="{{ profile.khcx if profile.khcx is not none else '' }}"
+                       placeholder="leave blank if none">
+              </div>
+              <div class="col-sm-6">
+                <label class="form-label">Handle connector Z (khcz) <span class="text-muted small">optional</span></label>
+                <input id="e-khcz" type="number" step="0.01" class="form-control"
+                       value="{{ profile.khcz if profile.khcz is not none else '' }}"
+                       placeholder="leave blank if none">
+              </div>
+              <div class="col-sm-6">
+                <label class="form-label">Default system <span class="text-muted small">optional</span></label>
+                <select id="e-default_system" class="form-select">
+                  <option value="">— none —</option>
+                  {% for s in systems %}
+                    <option value="{{ s.name }}"
+                      {{ 'selected' if profile.default_system == s.name else '' }}>
+                      {{ s.name }}
+                    </option>
+                  {% endfor %}
+                </select>
+              </div>
+              <div class="col-sm-6 d-flex align-items-end gap-4 pb-1">
+                <div class="form-check">
+                  <input class="form-check-input" type="checkbox" id="e-thin_handle"
+                         {{ 'checked' if profile.thin_handle else '' }}>
+                  <label class="form-check-label" for="e-thin_handle">Thin handle</label>
+                </div>
+                <div class="form-check">
+                  <input class="form-check-input" type="checkbox" id="e-match_handle"
+                         {{ 'checked' if profile.match_handle else '' }}>
+                  <label class="form-check-label" for="e-match_handle">Match connector</label>
+                </div>
+              </div>
+            </div>
+          </div>
+
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+const profileName = {{ profile.name | tojson }};
+
+function enterEdit() {
+  document.getElementById('view-pane').classList.add('d-none');
+  document.getElementById('edit-pane').classList.remove('d-none');
+  document.getElementById('edit-btn').closest('.d-flex').classList.add('d-none');
+  document.getElementById('save-btns').classList.remove('d-none');
+}
+
+function cancelEdit() {
+  document.getElementById('view-pane').classList.remove('d-none');
+  document.getElementById('edit-pane').classList.add('d-none');
+  document.getElementById('edit-btn').closest('.d-flex').classList.remove('d-none');
+  document.getElementById('save-btns').classList.add('d-none');
+  document.getElementById('alert-box').innerHTML = '';
+}
+
+async function saveProfile() {
+  const body = {
+    tol: document.getElementById('e-tol').value,
+    ph_base: document.getElementById('e-ph_base').value,
+    khcx: document.getElementById('e-khcx').value || null,
+    khcz: document.getElementById('e-khcz').value || null,
+    thin_handle: document.getElementById('e-thin_handle').checked,
+    match_handle: document.getElementById('e-match_handle').checked,
+    default_system: document.getElementById('e-default_system').value || null,
+  };
+
+  const res = await fetch(`/api/profiles/${encodeURIComponent(profileName)}`, {
+    method: 'PUT',
+    headers: {'Content-Type': 'application/json'},
+    body: JSON.stringify(body),
+  });
+  const data = await res.json();
+
+  if (res.ok) {
+    window.location.href = '/profiles';
+  } else {
+    document.getElementById('alert-box').innerHTML =
+      `<div class="alert alert-danger alert-dismissible">
+        ${data.error}
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+       </div>`;
+  }
+}
+</script>
+{% endblock %}

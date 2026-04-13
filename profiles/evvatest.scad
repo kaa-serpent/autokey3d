@@ -3,8 +3,5 @@ tol = 0.2;
 
 // Key profile height (including tolerance, i.e. measured on the lock, not the blank)
 // If you have information on the key blank height, add 2*tol.
-ph=7.8 + 2*tol;
-profile_path = "profiles/MD-BIAX.dxf";
-khcz=7.0;
-thin_handle=true;
-match_handle=true;
+ph=7.6 + 2*tol;
+profile_path = "profiles/evvatest.dxf";

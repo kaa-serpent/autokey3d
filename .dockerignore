@@ -1,0 +1,21 @@
+# Development environment
+venv/
+__pycache__/
+*.pyc
+*.pyo
+
+# Version control
+.git/
+.gitignore
+
+# Generated at runtime (re-created on each key generation)
+settings.scad
+profile.dxf
+branding/branding.svg
+branding/branding.dxf
+branding/branding.eps
+
+# Not needed in the image
+tests/
+docs/
+*.md

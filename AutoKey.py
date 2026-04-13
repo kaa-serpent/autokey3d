@@ -22,6 +22,8 @@ import shutil
 import subprocess
 import re
 
+from autokey_core import generate_key
+
 cv2_available = True
 
 try:
@@ -330,141 +332,29 @@ def main(argv=None):
 
     if not opts.definition:
         print("Error: --definition is required for specified action.", file=sys.stderr)
+        return 2
 
-    # Do the key branding
-    with open(os.path.join(BRAND_DIR, "branding-template.svg"), 'r') as f:
-        branding = f.read()
-    model = os.path.basename(opts.definition).replace(".scad", "")
-    if opts.branding_model:
-      model = opts.branding_model
+    if opts.bumpkey:
+        mode = "bumpkey"
+    elif opts.blank:
+        mode = "blank"
+    else:
+        mode = "key"
 
-    # Read system definition
-    with open(opts.definition, 'r') as f:
-        definition = f.read()
-
-    need_default_keycombcuts = not "module keycombcuts()" in definition
-    need_default_keytipcuts = not "module keytipcuts()" in definition
-
-    # Read profile definition
-    profile_definition_file = "%s.scad" % opts.profile.replace(".svg", "")
-    with open(profile_definition_file, 'r') as f:
-        profile_definition = f.read()
-
-    khcx_override = "khcx=" in profile_definition
-    khcz_override = "khcz=" in profile_definition
-    khcxoff_override = "khcxoff=" in profile_definition
-
-    def_tol = None
-    def_kl = None
-
-    # Look for length in system definition for branding
-    for line in definition.splitlines():
-        m = re.match("\s*kl\s*=\s*([\d\.]+)\s*;", line)
-        if m:
-          def_kl = m.group(1)
-          next
-
-    # Look for tolerance in profile definition for branding
-    for idx,line in enumerate(profile_definition.splitlines()):
-        m = re.match("\s*tol\s*=\s*([\d\.]+)\s*;", line)
-        if m:
-          def_tol = m.group(1)
-          def_tol_idx = idx
-          next
-
-    if def_kl is None:
-      print("Error: Failed to find key length in system definition file")
-      sys.exit(1)
-
-    if def_tol is None:
-      print("Error: Failed to find key tolerance in system definition file")
-      sys.exit(1)
-
-    if opts.tol:
-        lines = profile_definition.splitlines()
-        lines[def_tol_idx] = "tol = %s;" % opts.tol
-        profile_definition = "\n".join(lines)
-        def_tol = opts.tol
-
-    branding = branding.replace("%model%", model)
-    branding = branding.replace("%length%", "%s" % def_kl)
-    branding = branding.replace("%tol%", "%s" % def_tol)
-    with open(os.path.join(BRAND_DIR, "branding.svg"), 'w') as f:
-        f.write(branding)
-
-    DEVNULL = open(os.devnull, 'w')
-
-    subprocess.check_call(["inkscape", "--export-eps", os.path.join(BRAND_DIR, "branding.eps"), os.path.join(BRAND_DIR, "branding.svg"),])
-    subprocess.check_call(["pstoedit", "-nb", "-dt", "-f", "dxf:-polyaslines", os.path.join(BRAND_DIR, "branding.eps"), os.path.join(BRAND_DIR, "branding.dxf")], stderr=DEVNULL)
-
-    # Read base settings
-    with open(os.path.join(BASE_DIR, "base-settings.scad"), 'r') as f:
-        baseSettings = f.read()
-
-    if khcx_override:
-        baseSettings = baseSettings.replace("khcx=", "//khcx=")
-
-    if khcz_override:
-        baseSettings = baseSettings.replace("khcz=", "//khcz=")
-
-    if khcxoff_override:
-        baseSettings = baseSettings.replace("khcxoff=", "//khcxoff=")
-
-    # Compose real settings
-    with open(os.path.join(BASE_DIR, "settings.scad"), 'w') as f:
-        f.write("/* AUTO-GENERATED FILE - DO NOT EDIT */\n\n")
-        f.write("include <pre-settings.scad>;\n")
-
-        if opts.match_handle_connector:
-            f.write("match_handle = true;\n")
-        else:
-            f.write("match_handle = false;\n")
-
-        if opts.bumpkey:
-            f.write("bumpkey = true;\n")
-        else:
-            f.write("bumpkey = false;\n")
-
-        if opts.blank:
-            f.write("blank = true;\n")
-        else:
-            f.write("blank = false;\n")
-
-        if opts.key:
-            combination = opts.key.split(",")
-            for idx in range(0, len(combination)):
-                try:
-                    int(combination[idx])
-                except ValueError:
-                    combination[idx] = '"%s"' % combination[idx]
-            f.write("combination = [%s];\n" % ",".join(combination))
-        else:
-            f.write("combination = 0;\n")
-
-        if opts.thin_handle:
-            f.write("thin_handle = true;\n")
-        else:
-            f.write("thin_handle = false;\n")
-
-        f.write(profile_definition)
-        f.write("\n")
-        f.write(definition)
-        f.write("\n")
-
-        f.write(baseSettings)
-        f.write("\n")
-
-        if need_default_keytipcuts:
-            f.write("include <includes/default-keytipcuts.scad>;")
-            f.write("\n")
-
-        if need_default_keycombcuts:
-            f.write("include <includes/default-keycombcuts.scad>;")
-            f.write("\n")
-
-    subprocess.check_call(["inkscape", "--export-eps", os.path.join(BASE_DIR, "profile.eps"), opts.profile])
-    subprocess.check_call(["pstoedit", "-nb", "-dt", "-f", "dxf:-polyaslines", os.path.join(BASE_DIR, "profile.eps"), os.path.join(BASE_DIR, "profile.dxf")], stderr=DEVNULL)
-    subprocess.check_call(["openscad", os.path.join(BASE_DIR, "key.scad") ])
+    try:
+        generate_key(
+            profile_svg_path=opts.profile,
+            definition_path=opts.definition,
+            mode=mode,
+            combination=opts.key,
+            tol_override=opts.tol,
+            thin_handle=opts.thin_handle,
+            match_handle_connector=opts.match_handle_connector,
+            branding_model=opts.branding_model,
+        )
+    except Exception as e:
+        print("Error: %s" % e, file=sys.stderr)
+        return 1
 
 
 if __name__ == "__main__":

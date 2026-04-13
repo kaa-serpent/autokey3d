@@ -1,69 +1,99 @@
 # AutoKey3D
 
-## Description
-
-AutoKey3D (formerly known as PhotoBump) is a software to create 3D models for
-key blanks, bumpkeys and regular keys.
+AutoKey3D is a tool for generating 3D-printable models of key blanks, bump keys, and regular keys. It ships with a modern web UI and runs entirely in Docker — no local installs required.
 
 ## License
 
-Please note that AutoKey3D is released under a *non-commercial* license (CC BY-NC-SA 4.0).
-
-See the LICENSE file for the exact license text.
+Released under the **CC BY-NC-SA 4.0** non-commercial license. See [LICENSE](LICENSE) for the full text.
 
 ### About
 
-Written by Christian Holler (:decoder). For questions, send an email to:
+Written by Christian Holler (:decoder). Questions: `decoder -at- own-hero -dot- net`
 
-`decoder -at- own-hero -dot- net`
+First presented at LockCon 2014, Sneek, NL. Recorded talk: https://www.youtube.com/watch?v=3pSa0pslxpU
 
-The software was first presented and demonstrated at LockCon 2014, Sneek, NL.
-
-The recorded talk is available here: https://www.youtube.com/watch?v=3pSa0pslxpU
+---
 
 ## Requirements
 
-* OpenSCAD (a version > 2014.03 taken from GIT or daily snapshots is recommended)
-* pstoedit
-* Inkscape
-* Python >= 2.7
+> **Docker is required.** No other local dependencies need to be installed.
 
-## Example
+- [Docker Desktop](https://www.docker.com/products/docker-desktop/) (includes Docker Compose)
 
-In order to create the 3D model for the bump key that was used in my video,
-you can run the following command:
+---
 
-`python AutoKey.py --bumpkey --profile profiles/AB-AB95.svg --definition definitions/AB-E20.scad`
+## Quick Start
 
-Once OpenSCAD has started, you can Preview/Render/Export the STL as desired.
+```bash
+# Clone the repo
+git clone https://github.com/kaa-serpent/autokey3d.git
+cd autokey3d
 
-Instead of using the `--bumpkey` parameter, you can also specify `--blank` for
-creating a blank instead, or use `--key 1,2,3,4,5,6` to create a key with
-the specified combination.
+# Build and launch (first run)
+docker compose up --build
 
-## Profiles
+# Subsequent starts (no rebuild needed)
+docker compose up
+```
 
-In the profiles/ subdirectory, you can find SVG traces created from photos for
-certain locks. You can add your own SVG data there if you wish to create a
-model for a profile not supported yet by the software. In addition to the SVG,
-there is always a profile definition file (.scad) that contains dimensional
-information about the profile (see profiles/README for more information).
+Then open **http://localhost:5000** in your browser.
 
-## System Definitions
+---
 
-The definitions/ subdirectory contains system definitions for certain locks.
-Such a definition typically contains information such as the key length, the
-pin/shoulder distances, key cut heights and angles. For bump keys, it is
-possible to deviate from the regular system definitions for better results.
+## Web UI
 
-Also see definitions/README for a more detailed documentation.
+### Browse Profiles
+
+Select a key profile from the library. Each card shows the profile silhouette, ID, and its associated system.
+
+![Profiles page](readme_images/example_profiles.png)
+
+### Inspect Lock Systems
+
+View detailed system parameters for any lock definition — pin spacing, cut levels, key length, and more.
+
+![System detail page](readme_images/example_system.png)
+
+### Generate a Key
+
+Pick a profile, choose a mode (blank, bump key, or specific combination), configure tolerances, and click **Generate** to produce a downloadable STL.
+
+![Generate Key page](readme_images/example_generate_key.png)
+
+---
+
+## CLI Usage (inside Docker)
+
+You can also drive key generation directly from the command line:
+
+```bash
+# Bump key
+docker compose exec app python AutoKey.py --bumpkey \
+  --profile profiles/AB-AB95.svg \
+  --definition definitions/AB-E20.scad
+
+# Blank
+docker compose exec app python AutoKey.py --blank \
+  --profile profiles/AB-AB1.svg \
+  --definition definitions/AB-C83.scad
+
+# Specific combination
+docker compose exec app python AutoKey.py --key 1,2,3,4,5 \
+  --profile profiles/AB-AB1.svg \
+  --definition definitions/AB-C83.scad
+```
+
+---
+
+## Profiles and System Definitions
+
+| Directory | Contents |
+|---|---|
+| `profiles/` | SVG traces of key profiles. Add your own SVG + `.scad` definition file to support new profiles. |
+| `definitions/` | Lock system definitions (key length, pin spacing, cut depths/angles). See `definitions/README` for the full spec. |
+
+---
 
 ## Known Issues
 
-### Preview
-
-Using "Preview" in OpenSCAD will most likely give you a glitched model. To
-check the model, use "Render" (which takes longer, but should produce a
-glitch-free view). For faster rendering, you can lower the $fn value in
-key.scad to 50 or 10, but make sure to set it back to 100 before doing final
-model rendering. Otherwise accuracy of the rendered model might be insufficient.
+**OpenSCAD Preview** — Use **Render** (F6) instead of Preview (F5) to get a correct model. For faster iteration, lower `$fn` to `50` or `10` in `key.scad`, but restore it to `100` before final export.
