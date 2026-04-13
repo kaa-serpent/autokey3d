@@ -1,6 +1,16 @@
+# Python
 venv/
 __pycache__/
 *.pyc
+*.pyo
+*.pyd
+.pytest_cache/
+.eggs/
+*.egg-info/
+dist/
+build/
+
+# Project-specific
 branding/branding.svg
 branding/branding.eps
 branding/branding.dxf
