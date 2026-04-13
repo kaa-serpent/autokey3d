@@ -78,10 +78,117 @@
     </button>
     <div id="status-box"></div>
   </div>
+
+  <!-- 3D preview -->
+  <div id="preview-card" class="card mb-3" style="display:none">
+    <div class="card-header d-flex align-items-center justify-content-between">
+      <strong><i class="bi bi-box me-2 text-primary"></i>Preview</strong>
+      <small class="text-muted">Drag to rotate &nbsp;·&nbsp; Scroll to zoom &nbsp;·&nbsp; Right-drag to pan</small>
+    </div>
+    <div class="card-body p-0" style="background:#1a1a2e">
+      <canvas id="stl-canvas" style="width:100%;height:320px;display:block;cursor:grab"></canvas>
+    </div>
+  </div>
 </div>
 {% endblock %}
 
+{% block head %}
+<script type="importmap">
+{
+  "imports": {
+    "three": "https://cdn.jsdelivr.net/npm/three@0.166.1/build/three.module.js",
+    "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.166.1/examples/jsm/"
+  }
+}
+</script>
+{% endblock %}
+
 {% block scripts %}
+<script type="module">
+import * as THREE from 'three';
+import { STLLoader } from 'three/addons/loaders/STLLoader.js';
+import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
+
+let renderer, scene, camera, controls, animId;
+
+function initViewer(jobId) {
+  const card = document.getElementById('preview-card');
+  const canvas = document.getElementById('stl-canvas');
+  card.style.display = '';
+
+  // Tear down previous renderer if any
+  if (renderer) {
+    cancelAnimationFrame(animId);
+    renderer.dispose();
+  }
+
+  const w = canvas.clientWidth;
+  const h = canvas.clientHeight;
+
+  renderer = new THREE.WebGLRenderer({ canvas, antialias: true });
+  renderer.setPixelRatio(window.devicePixelRatio);
+  renderer.setSize(w, h, false);
+  renderer.setClearColor(0x1a1a2e);
+
+  scene = new THREE.Scene();
+  camera = new THREE.PerspectiveCamera(45, w / h, 0.1, 10000);
+
+  // Lights
+  scene.add(new THREE.AmbientLight(0xffffff, 0.5));
+  const dir = new THREE.DirectionalLight(0xffffff, 1.2);
+  dir.position.set(1, 2, 3);
+  scene.add(dir);
+  const dir2 = new THREE.DirectionalLight(0x8888ff, 0.4);
+  dir2.position.set(-2, -1, -1);
+  scene.add(dir2);
+
+  controls = new OrbitControls(camera, canvas);
+  controls.enableDamping = true;
+  controls.dampingFactor = 0.08;
+
+  const loader = new STLLoader();
+  loader.load(`/api/stl/${jobId}`, (geometry) => {
+    geometry.computeBoundingBox();
+    geometry.computeVertexNormals();
+
+    const box = geometry.boundingBox;
+    const center = new THREE.Vector3();
+    box.getCenter(center);
+    geometry.translate(-center.x, -center.y, -center.z);
+
+    const size = new THREE.Vector3();
+    box.getSize(size);
+    const maxDim = Math.max(size.x, size.y, size.z);
+
+    const mat = new THREE.MeshPhongMaterial({ color: 0x4a9eff, specular: 0x222222, shininess: 40 });
+    const mesh = new THREE.Mesh(geometry, mat);
+    scene.add(mesh);
+
+    camera.position.set(0, maxDim * 0.5, maxDim * 2);
+    controls.target.set(0, 0, 0);
+    controls.update();
+
+    function animate() {
+      animId = requestAnimationFrame(animate);
+      controls.update();
+      renderer.render(scene, camera);
+    }
+    animate();
+  });
+
+  // Resize observer
+  new ResizeObserver(() => {
+    const w2 = canvas.clientWidth, h2 = canvas.clientHeight;
+    renderer.setSize(w2, h2, false);
+    camera.aspect = w2 / h2;
+    camera.updateProjectionMatrix();
+  }).observe(canvas);
+}
+
+// Expose so the non-module script can call it
+window._initStlViewer = initViewer;
+</script>
+
 <script>
 let allProfiles = [];
 let allSystems = [];
@@ -214,6 +321,7 @@ async function pollStatus() {
        <a href="/api/download/${currentJobId}" class="btn btn-sm btn-success ms-2">
          <i class="bi bi-download me-1"></i>Download STL
        </a>`);
+    if (window._initStlViewer) window._initStlViewer(currentJobId);
     updateGenBtn();
   } else if (data.status === 'error') {
     clearPoll();
