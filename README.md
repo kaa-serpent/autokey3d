@@ -26,7 +26,7 @@ First presented at LockCon 2014, Sneek, NL. Recorded talk: https://www.youtube.c
 
 ```bash
 # Clone the repo
-git clone https://github.com/your-org/autokey3d.git
+git clone https://github.com/kaa-serpent/autokey3d.git
 cd autokey3d
 
 # Build and launch (first run)
