@@ -13,7 +13,7 @@ import subprocess
 import sys
 from xml.etree import ElementTree as ET
 
-BASE_DIR = os.path.dirname(os.path.realpath(__file__))
+BASE_DIR = os.path.dirname(os.path.dirname(os.path.realpath(__file__)))
 BRAND_DIR = os.path.join(BASE_DIR, "branding")
 
 # ---------------------------------------------------------------------------
@@ -470,7 +470,7 @@ def generate_key(
     svg_to_dxf(branding_svg, os.path.join(BRAND_DIR, "branding.dxf"))
 
     # --- read base settings ---
-    with open(os.path.join(BASE_DIR, "base-settings.scad"), 'r') as f:
+    with open(os.path.join(BASE_DIR, "scad", "base-settings.scad"), 'r') as f:
         base_settings = f.read()
 
     if khcx_override:
@@ -483,7 +483,7 @@ def generate_key(
     # --- compose settings.scad ---
     with open(os.path.join(BASE_DIR, "settings.scad"), 'w') as f:
         f.write("/* AUTO-GENERATED FILE - DO NOT EDIT */\n\n")
-        f.write("include <pre-settings.scad>;\n")
+        f.write("include <scad/pre-settings.scad>;\n")
 
         f.write("match_handle = %s;\n" % ("true" if match_handle_connector else "false"))
         f.write("bumpkey = %s;\n" % ("true" if mode == "bumpkey" else "false"))

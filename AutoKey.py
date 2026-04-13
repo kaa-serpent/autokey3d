@@ -22,7 +22,7 @@ import shutil
 import subprocess
 import re
 
-from autokey_core import generate_key
+from src.autokey_core import generate_key
 
 cv2_available = True
 

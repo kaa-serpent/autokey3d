@@ -1,6 +1,6 @@
 # Data Layer Reference
 
-## ProfileIndex (`profile_index.py`)
+## ProfileIndex (`src/profile_index.py`)
 
 The data layer. Holds all profile and system entries in memory; `profiles.json` is the on-disk store.
 

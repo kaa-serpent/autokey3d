@@ -4,9 +4,9 @@
 
 The project has a CLI layer and a Flask web app:
 
-- **`autokey_core.py`** — pure generation logic. Key functions: `generate_key()`, `write_profile_scad()`, `write_system_scad()`.
+- **`src/autokey_core.py`** — pure generation logic. Key functions: `generate_key()`, `write_profile_scad()`, `write_system_scad()`.
 - **`AutoKey.py`** — thin CLI wrapper that delegates to `autokey_core.generate_key()`. Original interface preserved.
-- **`profile_index.py`** — data layer: loads/saves `profiles.json`, parses `.scad` files.
+- **`src/profile_index.py`** — data layer: loads/saves `profiles.json`, parses `.scad` files.
 - **`web_app.py`** — Flask web server (pages + REST API).
 - **`web/templates/`** — Jinja2 templates (extend `base.html`).
 - **`web/static/`** — static assets (Bootstrap loaded from CDN).

@@ -17,8 +17,8 @@ import uuid
 
 from flask import Flask, jsonify, redirect, render_template, request, send_file
 
-import autokey_core
-from profile_index import ProfileIndex
+from src import autokey_core
+from src.profile_index import ProfileIndex
 
 BASE_DIR = os.path.dirname(os.path.realpath(__file__))
 
@@ -316,6 +316,21 @@ def api_download(job_id):
     if not stl_path or not os.path.isfile(stl_path):
         return jsonify({"error": "STL file not found"}), 500
     return send_file(stl_path, as_attachment=True, download_name="key.stl")
+
+
+@app.route("/api/stl/<job_id>")
+def api_stl_inline(job_id):
+    """Serve STL for in-browser preview (no Content-Disposition attachment)."""
+    with _jobs_lock:
+        job = _jobs.get(job_id)
+    if job is None:
+        return jsonify({"error": "unknown job"}), 404
+    if job["status"] != "done":
+        return jsonify({"error": "not ready"}), 400
+    stl_path = job["stl_path"]
+    if not stl_path or not os.path.isfile(stl_path):
+        return jsonify({"error": "STL file not found"}), 500
+    return send_file(stl_path, mimetype="model/stl")
 
 
 # ── API: add profile / system ─────────────────────────────────────────────────

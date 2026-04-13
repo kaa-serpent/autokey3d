@@ -1,0 +1,3 @@
+# Ensure shell scripts always have LF line endings in the repo,
+# regardless of the developer's OS, so they run correctly in Linux containers.
+*.sh text eol=lf

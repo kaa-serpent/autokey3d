@@ -24,10 +24,11 @@ COPY requirements.txt .
 RUN python3 -m venv /venv \
     && /venv/bin/pip install --no-cache-dir -r requirements.txt
 
-COPY . .
+COPY docker/entrypoint.sh /entrypoint.sh
+RUN sed -i 's/\r//' /entrypoint.sh && chmod +x /entrypoint.sh
 
-RUN chmod +x docker/entrypoint.sh
+COPY . .
 
 EXPOSE 5000
 
-ENTRYPOINT ["docker/entrypoint.sh"]
+ENTRYPOINT ["/entrypoint.sh"]

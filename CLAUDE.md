@@ -14,6 +14,12 @@ Read the relevant doc before modifying related code.
 - [docs/web.md](docs/web.md) — Flask web app pages, API endpoints, job store, template structure
 - [docs/docker.md](docs/docker.md) — Docker setup, Xvfb, persistence
 
+## Layout
+
+- `src/` — internal Python modules (`autokey_core.py`, `profile_index.py`)
+- `scad/` — stable OpenSCAD templates (`base-settings.scad`, `pre-settings.scad`)
+- Entry points (`AutoKey.py`, `web_app.py`) and the main OpenSCAD model (`key.scad`) stay at the root
+
 ## Commands
 
 ### With Docker (no local installs needed)

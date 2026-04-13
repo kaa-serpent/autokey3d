@@ -6,7 +6,7 @@ Key generation is handled by `autokey_core.generate_key()`. The CLI (`AutoKey.py
 
 ## `generate_key()` Signature
 
-**Location:** `autokey_core.py`
+**Location:** `src/autokey_core.py`
 
 ```python
 def generate_key(
