@@ -12,8 +12,21 @@ Read the relevant doc before modifying related code.
 - [docs/generation.md](docs/generation.md) — `generate_key()` pipeline, CLI args, SVG→DXF, settings.scad composition
 - [docs/data.md](docs/data.md) — ProfileIndex, profiles.json structure, testing
 - [docs/web.md](docs/web.md) — Flask web app pages, API endpoints, job store, template structure
+- [docs/docker.md](docs/docker.md) — Docker setup, Xvfb, persistence
 
 ## Commands
+
+### With Docker (no local installs needed)
+
+```bash
+# Build and start (http://localhost:5000)
+docker compose up --build
+
+# Subsequent starts (no rebuild needed unless Dockerfile/requirements changed)
+docker compose up
+```
+
+### Without Docker (local venv)
 
 All commands must be run in the venv.
 

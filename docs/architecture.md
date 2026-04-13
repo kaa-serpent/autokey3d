@@ -30,15 +30,16 @@ A key model requires **two independent files** used together:
 
 ## External Tool Dependencies
 
-OpenSCAD, Inkscape, and pstoedit must be on `PATH`. They are invoked as subprocesses.
+| Tool | Required for | Notes |
+|------|-------------|-------|
+| **OpenSCAD** | STL rendering | Must be on `PATH`. Called headless: `openscad -o output.stl key.scad`. |
+| **Inkscape** | Branding DXF | Called only when the SVG has `<text>` elements (always true for the built-in branding template). Flattens text to paths before the pure-Python DXF writer runs. |
 
-- **Inkscape** — converts branding SVG text to paths, and SVG → EPS → DXF when no pre-computed DXF exists.
-- **OpenSCAD** — renders `key.scad` into the final STL.
-- **pstoedit** — part of the branding DXF conversion chain.
+`pstoedit` is **not used** — branding conversion is handled entirely by Inkscape + the pure-Python SVG→DXF parser in `autokey_core.py`.
 
-The pre-computed `.dxf` files in `profiles/` allow key generation without Inkscape for the profile step.
+Profile DXF files (`profiles/<name>.dxf`) are regenerated from the SVG on each run using the pure-Python parser — Inkscape is not involved.
 
-Tool discovery order: `PATH` first, then common Windows install directories. See [generation.md § Tool Discovery](generation.md#tool-discovery-_find_tool) for details.
+Tool discovery order: `PATH` first, then common Windows install directories. See [generation.md](generation.md) for details.
 
 ---
 
