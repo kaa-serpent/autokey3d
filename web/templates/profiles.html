@@ -1,0 +1,98 @@
+{% extends "base.html" %}
+
+{% block title %}Profiles — AutoKey 3D{% endblock %}
+
+{% block content %}
+<div class="page-header">
+  <div class="container d-flex align-items-center justify-content-between">
+    <div>
+      <h1><i class="bi bi-key-fill me-2 text-primary"></i>Profiles</h1>
+      <p class="text-muted mb-0">Browse and manage keyway profiles</p>
+    </div>
+    <a href="/add-profile" class="btn btn-primary">
+      <i class="bi bi-plus-lg me-1"></i>Add Profile
+    </a>
+  </div>
+</div>
+
+<div class="container">
+  <div class="card mb-4">
+    <div class="card-body pb-2">
+      <div class="d-flex align-items-center gap-3">
+        <div class="flex-grow-1">
+          <div class="input-group">
+            <span class="input-group-text bg-white"><i class="bi bi-search text-muted"></i></span>
+            <input id="search" type="search" class="form-control border-start-0"
+                   placeholder="Search profiles…">
+          </div>
+        </div>
+        <span id="count-label" class="text-muted small text-nowrap"></span>
+      </div>
+    </div>
+  </div>
+
+  <div id="profile-grid" class="row row-cols-2 row-cols-sm-3 row-cols-md-4 row-cols-lg-5 g-3">
+    <div class="col text-muted">Loading…</div>
+  </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+let allProfiles = [];
+
+async function loadData() {
+  const res = await fetch('/api/profiles');
+  const data = await res.json();
+  allProfiles = data.profiles;
+  renderProfiles(allProfiles);
+}
+
+function renderProfiles(list) {
+  const grid = document.getElementById('profile-grid');
+  document.getElementById('count-label').textContent =
+    list.length + ' profile' + (list.length !== 1 ? 's' : '');
+
+  grid.innerHTML = '';
+  if (!list.length) {
+    grid.innerHTML = '<div class="col text-muted">No profiles found.</div>';
+    return;
+  }
+  list.forEach(p => {
+    const col = document.createElement('div');
+    col.className = 'col';
+
+    const thinBadge = p.thin_handle
+      ? '<span class="badge badge-bool-true ms-1">thin</span>' : '';
+    const matchBadge = p.match_handle
+      ? '<span class="badge badge-bool-true ms-1">match</span>' : '';
+    const sysBadge = p.default_system
+      ? `<div class="small text-muted text-truncate mt-1"><i class="bi bi-diagram-3 me-1"></i>${p.default_system}</div>` : '';
+
+    col.innerHTML = `
+      <div class="card profile-card h-100 text-center p-2" data-name="${p.name}"
+           onclick="window.location='/profile/${encodeURIComponent(p.name)}'">
+        <div class="card-overlay">
+          <span class="badge bg-primary"><i class="bi bi-pencil me-1"></i>View / Edit</span>
+        </div>
+        <img src="/thumbnails/${encodeURIComponent(p.name)}" alt="${p.name}"
+             class="mx-auto d-block mb-2" onerror="this.style.display='none'">
+        <div class="small fw-semibold text-truncate">${p.name}</div>
+        <div class="small text-muted">
+          tol&nbsp;${p.tol ?? '—'} · ph&nbsp;${p.ph_base ?? '—'}
+          ${thinBadge}${matchBadge}
+        </div>
+        ${sysBadge}
+      </div>`;
+    grid.appendChild(col);
+  });
+}
+
+document.getElementById('search').addEventListener('input', e => {
+  const q = e.target.value.toLowerCase();
+  renderProfiles(q ? allProfiles.filter(p => p.name.toLowerCase().includes(q)) : allProfiles);
+});
+
+loadData();
+</script>
+{% endblock %}

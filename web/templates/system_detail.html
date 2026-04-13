@@ -1,0 +1,191 @@
+{% extends "base.html" %}
+
+{% block title %}{{ system.name }} — AutoKey 3D{% endblock %}
+
+{% block content %}
+<div class="page-header">
+  <div class="container d-flex align-items-center justify-content-between flex-wrap gap-2">
+    <div class="d-flex align-items-center gap-3">
+      <a href="/systems" class="btn btn-outline-secondary btn-sm">
+        <i class="bi bi-arrow-left me-1"></i>Systems
+      </a>
+      <div>
+        <h1>{{ system.name }}</h1>
+        <p class="text-muted mb-0">Lock system definition</p>
+      </div>
+    </div>
+    <div class="d-flex gap-2" id="action-btns">
+      <button id="edit-btn" class="btn btn-outline-primary btn-sm" onclick="enterEdit()">
+        <i class="bi bi-pencil me-1"></i>Edit
+      </button>
+    </div>
+    <div class="d-flex gap-2 d-none" id="save-btns">
+      <button class="btn btn-primary btn-sm" onclick="saveSystem()">
+        <i class="bi bi-check-lg me-1"></i>Save
+      </button>
+      <button class="btn btn-outline-secondary btn-sm" onclick="cancelEdit()">
+        Cancel
+      </button>
+    </div>
+  </div>
+</div>
+
+<div class="container">
+  <div id="alert-box"></div>
+
+  <div class="row g-4">
+    <!-- Parameters card -->
+    <div class="col-lg-8">
+      <div class="card">
+        <div class="card-header fw-semibold">Parameters</div>
+        <div class="card-body">
+
+          <!-- VIEW MODE -->
+          <div id="view-pane">
+            <dl class="row params mb-0">
+              <dt class="col-sm-5">Key length (kl)</dt>
+              <dd class="col-sm-7" id="v-kl">{{ system.kl }} mm</dd>
+
+              <dt class="col-sm-5">Shoulder to first pin (aspace)</dt>
+              <dd class="col-sm-7" id="v-aspace">{{ system.aspace if system.aspace is not none else '—' }} mm</dd>
+
+              <dt class="col-sm-5">Pin spacing (pinspace)</dt>
+              <dd class="col-sm-7" id="v-pinspace">{{ system.pinspace if system.pinspace is not none else '—' }} mm</dd>
+
+              <dt class="col-sm-5">Highest cut offset (hcut_offset)</dt>
+              <dd class="col-sm-7" id="v-hcut_offset">
+                {{ system.hcut_offset if system.hcut_offset is not none else '—' }}
+                <span class="text-muted small">→ hcut = ph − 2·tol − this</span>
+              </dd>
+
+              <dt class="col-sm-5">Cut level spacing (cutspace)</dt>
+              <dd class="col-sm-7" id="v-cutspace">{{ system.cutspace if system.cutspace is not none else '—' }} mm</dd>
+
+              <dt class="col-sm-5">V-cut angle (cutangle)</dt>
+              <dd class="col-sm-7" id="v-cutangle">{{ system.cutangle if system.cutangle is not none else '—' }}°</dd>
+
+              <dt class="col-sm-5">Plateau width (platspace)</dt>
+              <dd class="col-sm-7" id="v-platspace">{{ system.platspace if system.platspace is not none else '—' }} mm</dd>
+
+              <dt class="col-sm-5">Definition file</dt>
+              <dd class="col-sm-7 text-muted small">{{ system.scad_path }}</dd>
+            </dl>
+          </div>
+
+          <!-- EDIT MODE (hidden initially) -->
+          <div id="edit-pane" class="d-none">
+            <div class="row g-3">
+              <div class="col-sm-6">
+                <label class="form-label">Key length — kl <span class="text-muted small">mm</span></label>
+                <input id="e-kl" type="number" step="0.01" class="form-control"
+                       value="{{ system.kl }}">
+              </div>
+              <div class="col-sm-6">
+                <label class="form-label">Shoulder to first pin — aspace <span class="text-muted small">mm</span></label>
+                <input id="e-aspace" type="number" step="0.01" class="form-control"
+                       value="{{ system.aspace if system.aspace is not none else '' }}">
+              </div>
+              <div class="col-sm-6">
+                <label class="form-label">Pin spacing — pinspace <span class="text-muted small">mm</span></label>
+                <input id="e-pinspace" type="number" step="0.01" class="form-control"
+                       value="{{ system.pinspace if system.pinspace is not none else '' }}">
+              </div>
+              <div class="col-sm-6">
+                <label class="form-label">Highest cut offset — hcut_offset</label>
+                <input id="e-hcut_offset" type="number" step="0.01" class="form-control"
+                       value="{{ system.hcut_offset if system.hcut_offset is not none else '' }}">
+                <div class="form-text">hcut = ph − 2·tol − <em>this value</em></div>
+              </div>
+              <div class="col-sm-6">
+                <label class="form-label">Cut level spacing — cutspace <span class="text-muted small">mm</span></label>
+                <input id="e-cutspace" type="number" step="0.001" class="form-control"
+                       value="{{ system.cutspace if system.cutspace is not none else '' }}">
+              </div>
+              <div class="col-sm-6">
+                <label class="form-label">V-cut angle — cutangle <span class="text-muted small">°</span></label>
+                <input id="e-cutangle" type="number" step="0.1" class="form-control"
+                       value="{{ system.cutangle if system.cutangle is not none else '' }}">
+              </div>
+              <div class="col-sm-6">
+                <label class="form-label">Plateau width — platspace <span class="text-muted small">mm</span></label>
+                <input id="e-platspace" type="number" step="0.001" class="form-control"
+                       value="{{ system.platspace if system.platspace is not none else '' }}">
+              </div>
+            </div>
+          </div>
+
+        </div>
+      </div>
+    </div>
+
+    <!-- Used-by card -->
+    <div class="col-lg-4">
+      <div class="card">
+        <div class="card-header fw-semibold">Used as default by</div>
+        <div class="card-body">
+          {% if using_profiles %}
+            <ul class="list-unstyled mb-0">
+              {% for pname in using_profiles %}
+                <li class="mb-1">
+                  <a href="/profile/{{ pname }}" class="d-flex align-items-center gap-2 text-decoration-none">
+                    <img src="/thumbnails/{{ pname }}" alt="{{ pname }}"
+                         style="height:32px;width:48px;object-fit:contain;background:#f8f9fa;border-radius:4px;"
+                         onerror="this.style.display='none'">
+                    <span>{{ pname }}</span>
+                  </a>
+                </li>
+              {% endfor %}
+            </ul>
+          {% else %}
+            <p class="text-muted mb-0 small">No profiles use this system as their default.</p>
+          {% endif %}
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+const systemName = {{ system.name | tojson }};
+
+function enterEdit() {
+  document.getElementById('view-pane').classList.add('d-none');
+  document.getElementById('edit-pane').classList.remove('d-none');
+  document.getElementById('action-btns').classList.add('d-none');
+  document.getElementById('save-btns').classList.remove('d-none');
+}
+
+function cancelEdit() {
+  document.getElementById('view-pane').classList.remove('d-none');
+  document.getElementById('edit-pane').classList.add('d-none');
+  document.getElementById('action-btns').classList.remove('d-none');
+  document.getElementById('save-btns').classList.add('d-none');
+  document.getElementById('alert-box').innerHTML = '';
+}
+
+async function saveSystem() {
+  const fields = ['kl', 'aspace', 'pinspace', 'hcut_offset', 'cutspace', 'cutangle', 'platspace'];
+  const body = {};
+  for (const f of fields) body[f] = document.getElementById('e-' + f).value;
+
+  const res = await fetch(`/api/systems/${encodeURIComponent(systemName)}`, {
+    method: 'PUT',
+    headers: {'Content-Type': 'application/json'},
+    body: JSON.stringify(body),
+  });
+  const data = await res.json();
+
+  if (res.ok) {
+    window.location.href = '/systems';
+  } else {
+    document.getElementById('alert-box').innerHTML =
+      `<div class="alert alert-danger alert-dismissible">
+        ${data.error}
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+       </div>`;
+  }
+}
+</script>
+{% endblock %}

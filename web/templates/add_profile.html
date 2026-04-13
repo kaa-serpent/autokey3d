@@ -1,77 +1,90 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Add Profile — AutoKey 3D</title>
-  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css">
-</head>
-<body class="bg-light">
-<div class="container py-4" style="max-width:600px">
-  <div class="d-flex align-items-center gap-3 mb-4">
-    <a href="/" class="btn btn-outline-secondary btn-sm">← Back</a>
-    <h1 class="mb-0 h3">Add New Profile</h1>
+{% extends "base.html" %}
+
+{% block title %}Add Profile — AutoKey 3D{% endblock %}
+
+{% block content %}
+<div class="page-header">
+  <div class="container d-flex align-items-center gap-3">
+    <a href="/profiles" class="btn btn-outline-secondary btn-sm">
+      <i class="bi bi-arrow-left me-1"></i>Profiles
+    </a>
+    <div>
+      <h1>Add New Profile</h1>
+      <p class="text-muted mb-0">Upload a keyway SVG and set its parameters</p>
+    </div>
   </div>
-
-  <div id="alert-box"></div>
-
-  <form id="profile-form" enctype="multipart/form-data">
-    <div class="mb-3">
-      <label class="form-label">Profile name <span class="text-muted small">(e.g. MY-LOCK1, letters/digits/-/_)</span></label>
-      <input name="name" type="text" class="form-control" required pattern="[A-Za-z0-9_\-]+" placeholder="MY-LOCK1">
-    </div>
-
-    <div class="mb-3">
-      <label class="form-label">SVG file</label>
-      <input name="svg_file" type="file" class="form-control" accept=".svg" required>
-    </div>
-
-    <div class="row g-3 mb-3">
-      <div class="col-sm-6">
-        <label class="form-label">Tolerance (tol)</label>
-        <input name="tol" type="number" step="0.01" class="form-control" value="0.0" required>
-      </div>
-      <div class="col-sm-6">
-        <label class="form-label">Height base (ph_base) <span class="text-muted small">mm, before tol</span></label>
-        <input name="ph_base" type="number" step="0.01" class="form-control" required placeholder="e.g. 8.25">
-      </div>
-    </div>
-
-    <div class="row g-3 mb-3">
-      <div class="col-sm-6">
-        <label class="form-label">Handle connector X (khcx) <span class="text-muted small">optional</span></label>
-        <input name="khcx" type="number" step="0.01" class="form-control" placeholder="leave blank if none">
-      </div>
-      <div class="col-sm-6">
-        <label class="form-label">Handle connector Z (khcz) <span class="text-muted small">optional</span></label>
-        <input name="khcz" type="number" step="0.01" class="form-control" placeholder="leave blank if none">
-      </div>
-    </div>
-
-    <div class="mb-3 d-flex gap-4">
-      <div class="form-check">
-        <input class="form-check-input" type="checkbox" name="thin_handle" id="thin-handle">
-        <label class="form-check-label" for="thin-handle">Thin handle</label>
-      </div>
-      <div class="form-check">
-        <input class="form-check-input" type="checkbox" name="match_handle" id="match-handle">
-        <label class="form-check-label" for="match-handle">Match handle connector</label>
-      </div>
-    </div>
-
-    <div class="mb-4">
-      <label class="form-label">Default system <span class="text-muted small">optional</span></label>
-      <select name="default_system" id="default-system" class="form-select">
-        <option value="">— none —</option>
-      </select>
-    </div>
-
-    <button type="submit" class="btn btn-primary">Save Profile</button>
-  </form>
 </div>
 
+<div class="container" style="max-width:640px">
+  <div id="alert-box"></div>
+
+  <div class="card">
+    <div class="card-body">
+      <form id="profile-form" enctype="multipart/form-data">
+        <div class="mb-3">
+          <label class="form-label">Profile name <span class="text-muted small">(e.g. MY-LOCK1, letters/digits/-/_)</span></label>
+          <input name="name" type="text" class="form-control" required pattern="[A-Za-z0-9_\-]+" placeholder="MY-LOCK1">
+        </div>
+
+        <div class="mb-3">
+          <label class="form-label">SVG file</label>
+          <input name="svg_file" type="file" class="form-control" accept=".svg" required>
+        </div>
+
+        <div class="row g-3 mb-3">
+          <div class="col-sm-6">
+            <label class="form-label">Tolerance (tol)</label>
+            <input name="tol" type="number" step="0.01" class="form-control" value="0.0" required>
+          </div>
+          <div class="col-sm-6">
+            <label class="form-label">Height base (ph_base) <span class="text-muted small">mm, before tol</span></label>
+            <input name="ph_base" type="number" step="0.01" class="form-control" required placeholder="e.g. 8.25">
+          </div>
+        </div>
+
+        <div class="row g-3 mb-3">
+          <div class="col-sm-6">
+            <label class="form-label">Handle connector X (khcx) <span class="text-muted small">optional</span></label>
+            <input name="khcx" type="number" step="0.01" class="form-control" placeholder="leave blank if none">
+          </div>
+          <div class="col-sm-6">
+            <label class="form-label">Handle connector Z (khcz) <span class="text-muted small">optional</span></label>
+            <input name="khcz" type="number" step="0.01" class="form-control" placeholder="leave blank if none">
+          </div>
+        </div>
+
+        <div class="mb-3 d-flex gap-4">
+          <div class="form-check">
+            <input class="form-check-input" type="checkbox" name="thin_handle" id="thin-handle">
+            <label class="form-check-label" for="thin-handle">Thin handle</label>
+          </div>
+          <div class="form-check">
+            <input class="form-check-input" type="checkbox" name="match_handle" id="match-handle">
+            <label class="form-check-label" for="match-handle">Match handle connector</label>
+          </div>
+        </div>
+
+        <div class="mb-4">
+          <label class="form-label">Default system <span class="text-muted small">optional</span></label>
+          <select name="default_system" id="default-system" class="form-select">
+            <option value="">— none —</option>
+          </select>
+        </div>
+
+        <div class="d-flex gap-2">
+          <button type="submit" class="btn btn-primary">
+            <i class="bi bi-plus-lg me-1"></i>Save Profile
+          </button>
+          <a href="/profiles" class="btn btn-outline-secondary">Cancel</a>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
 <script>
-// Populate default system list
 fetch('/api/profiles').then(r => r.json()).then(data => {
   const sel = document.getElementById('default-system');
   data.systems.forEach(s => {
@@ -92,13 +105,15 @@ document.getElementById('profile-form').addEventListener('submit', async e => {
   const data = await res.json();
 
   if (res.ok) {
-    window.location.href = '/';
+    window.location.href = '/profiles';
   } else {
     document.getElementById('alert-box').innerHTML =
-      `<div class="alert alert-danger">${data.error}</div>`;
+      `<div class="alert alert-danger alert-dismissible">
+        ${data.error}
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+       </div>`;
     btn.disabled = false;
   }
 });
 </script>
-</body>
-</html>
+{% endblock %}

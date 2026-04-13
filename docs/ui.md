@@ -126,6 +126,8 @@ The data layer. Holds all profile and system entries in memory; `profiles.json` 
 | `save()` | Write current state to `profiles.json` (pretty-printed). |
 | `add_profile(entry)` | Append a profile dict and save. |
 | `add_system(entry)` | Append a system dict and save. |
+| `update_profile(name, updates)` | Merge a dict of changes into an existing profile entry and save. |
+| `update_system(name, updates)` | Merge a dict of changes into an existing system entry and save. |
 | `set_profile_default_system(name, system_name)` | Persist a profile's default system choice. |
 
 **Parsing logic:**

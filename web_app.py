@@ -9,12 +9,13 @@ Then open http://localhost:5000 in a browser.
 
 import json
 import os
+import re
 import tempfile
 import threading
 import time
 import uuid
 
-from flask import Flask, jsonify, render_template, request, send_file
+from flask import Flask, jsonify, redirect, render_template, request, send_file
 
 import autokey_core
 from ui.profile_index import ProfileIndex
@@ -37,12 +38,58 @@ def _load_index() -> ProfileIndex:
     return idx
 
 
-# ── Routes ────────────────────────────────────────────────────────────────────
+# ── Page routes ───────────────────────────────────────────────────────────────
 
 @app.route("/")
 def index():
-    return render_template("index.html")
+    return render_template("index.html", active_page="generate")
 
+
+@app.route("/profiles")
+def page_profiles():
+    return render_template("profiles.html", active_page="profiles")
+
+
+@app.route("/systems")
+def page_systems():
+    return render_template("systems.html", active_page="systems")
+
+
+@app.route("/profile/<name>")
+def page_profile_detail(name):
+    idx = _load_index()
+    profile = next((p for p in idx.profiles if p["name"] == name), None)
+    if profile is None:
+        return "Profile not found", 404
+    systems = idx.systems
+    return render_template("profile_detail.html", active_page="profiles",
+                           profile=profile, systems=systems)
+
+
+@app.route("/system/<name>")
+def page_system_detail(name):
+    idx = _load_index()
+    system = next((s for s in idx.systems if s["name"] == name), None)
+    if system is None:
+        return "System not found", 404
+    # Profiles that use this system as their default
+    using_profiles = [p["name"] for p in idx.profiles if p.get("default_system") == name]
+    return render_template("system_detail.html", active_page="systems",
+                           system=system, using_profiles=using_profiles,
+                           all_profiles=idx.profiles)
+
+
+@app.route("/add-profile")
+def page_add_profile():
+    return render_template("add_profile.html", active_page="profiles")
+
+
+@app.route("/add-system")
+def page_add_system():
+    return render_template("add_system.html", active_page="systems")
+
+
+# ── API: list all ─────────────────────────────────────────────────────────────
 
 @app.route("/api/profiles")
 def api_profiles():
@@ -53,6 +100,112 @@ def api_profiles():
     })
 
 
+# ── API: single profile/system ────────────────────────────────────────────────
+
+@app.route("/api/profiles/<name>")
+def api_profile_get(name):
+    idx = _load_index()
+    profile = next((p for p in idx.profiles if p["name"] == name), None)
+    if profile is None:
+        return jsonify({"error": f"Unknown profile: {name}"}), 404
+    return jsonify(profile)
+
+
+@app.route("/api/systems/<name>")
+def api_system_get(name):
+    idx = _load_index()
+    system = next((s for s in idx.systems if s["name"] == name), None)
+    if system is None:
+        return jsonify({"error": f"Unknown system: {name}"}), 404
+    return jsonify(system)
+
+
+# ── API: update profile ───────────────────────────────────────────────────────
+
+@app.route("/api/profiles/<name>", methods=["PUT"])
+def api_profile_update(name):
+    idx = _load_index()
+    profile = next((p for p in idx.profiles if p["name"] == name), None)
+    if profile is None:
+        return jsonify({"error": f"Unknown profile: {name}"}), 404
+
+    data = request.get_json(force=True)
+
+    try:
+        tol = float(data.get("tol", profile["tol"]))
+    except (TypeError, ValueError):
+        return jsonify({"error": "tol must be a number"}), 400
+
+    try:
+        ph_base = float(data.get("ph_base", profile["ph_base"]))
+    except (TypeError, ValueError):
+        return jsonify({"error": "ph_base must be a number"}), 400
+
+    khcx_raw = data.get("khcx", profile.get("khcx"))
+    khcz_raw = data.get("khcz", profile.get("khcz"))
+    khcx = None
+    khcz = None
+    if khcx_raw not in (None, ""):
+        try:
+            khcx = float(khcx_raw)
+        except (TypeError, ValueError):
+            return jsonify({"error": "khcx must be a number"}), 400
+    if khcz_raw not in (None, ""):
+        try:
+            khcz = float(khcz_raw)
+        except (TypeError, ValueError):
+            return jsonify({"error": "khcz must be a number"}), 400
+
+    thin_handle = bool(data.get("thin_handle", profile.get("thin_handle", False)))
+    match_handle = bool(data.get("match_handle", profile.get("match_handle", False)))
+    default_system = data.get("default_system", profile.get("default_system")) or None
+    if default_system == "":
+        default_system = None
+
+    autokey_core.write_profile_scad(
+        BASE_DIR, name, tol, ph_base,
+        khcx=khcx, khcz=khcz,
+        thin_handle=thin_handle, match_handle=match_handle,
+    )
+
+    idx.update_profile(name, {
+        "tol": tol,
+        "ph_base": ph_base,
+        "khcx": khcx,
+        "khcz": khcz,
+        "thin_handle": thin_handle,
+        "match_handle": match_handle,
+        "default_system": default_system,
+    })
+    return jsonify({"ok": True})
+
+
+# ── API: update system ────────────────────────────────────────────────────────
+
+@app.route("/api/systems/<name>", methods=["PUT"])
+def api_system_update(name):
+    idx = _load_index()
+    system = next((s for s in idx.systems if s["name"] == name), None)
+    if system is None:
+        return jsonify({"error": f"Unknown system: {name}"}), 404
+
+    data = request.get_json(force=True)
+    float_fields = ["kl", "aspace", "pinspace", "hcut_offset", "cutspace", "cutangle", "platspace"]
+    values = {}
+    for key in float_fields:
+        raw = data.get(key, system.get(key))
+        try:
+            values[key] = float(raw)
+        except (TypeError, ValueError):
+            return jsonify({"error": f"{key} must be a number"}), 400
+
+    autokey_core.write_system_scad(BASE_DIR, name, **values)
+    idx.update_system(name, values)
+    return jsonify({"ok": True})
+
+
+# ── API: thumbnails ───────────────────────────────────────────────────────────
+
 @app.route("/thumbnails/<profile_name>")
 def thumbnail(profile_name):
     """Serve the SVG profile thumbnail directly — browsers render SVG natively."""
@@ -61,6 +214,8 @@ def thumbnail(profile_name):
         return "", 404
     return send_file(svg_path, mimetype="image/svg+xml")
 
+
+# ── API: key generation ───────────────────────────────────────────────────────
 
 @app.route("/api/generate", methods=["POST"])
 def api_generate():
@@ -158,19 +313,10 @@ def api_download(job_id):
     return send_file(stl_path, as_attachment=True, download_name="key.stl")
 
 
-@app.route("/add-profile")
-def page_add_profile():
-    return render_template("add_profile.html")
-
-
-@app.route("/add-system")
-def page_add_system():
-    return render_template("add_system.html")
-
+# ── API: add profile / system ─────────────────────────────────────────────────
 
 @app.route("/api/add-profile", methods=["POST"])
 def api_add_profile():
-    import re
     import shutil
 
     name = request.form.get("name", "").strip()
@@ -245,8 +391,6 @@ def api_add_profile():
 
 @app.route("/api/add-system", methods=["POST"])
 def api_add_system():
-    import re
-
     data = request.get_json(force=True)
     name = data.get("name", "").strip()
 

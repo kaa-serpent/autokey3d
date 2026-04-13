@@ -215,3 +215,19 @@ class ProfileIndex:
     def add_system(self, entry):
         self.systems.append(entry)
         self.save()
+
+    def update_profile(self, name, updates):
+        """Merge updates into an existing profile entry and save."""
+        for p in self.profiles:
+            if p["name"] == name:
+                p.update(updates)
+                break
+        self.save()
+
+    def update_system(self, name, updates):
+        """Merge updates into an existing system entry and save."""
+        for s in self.systems:
+            if s["name"] == name:
+                s.update(updates)
+                break
+        self.save()
