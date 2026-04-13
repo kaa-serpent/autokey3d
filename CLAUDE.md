@@ -2,6 +2,13 @@
 
 This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
 
+## Reference Docs
+
+- [docs/profile.md](docs/profile.md) — Profile parameters, files, tolerance, handle connectors
+- [docs/system.md](docs/system.md) — System definition parameters, special cases, custom modules
+- [docs/generation.md](docs/generation.md) — `generate_key()` pipeline, CLI args, SVG→DXF, settings.scad composition
+- [docs/ui.md](docs/ui.md) — UI screens, navigation, ProfileIndex, thumbnail caching, testing
+
 ## Commands
 
 All commands must bu runned in the venv.

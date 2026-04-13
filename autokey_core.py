@@ -386,9 +386,10 @@ def generate_key(
     thin_handle=False,
     match_handle_connector=False,
     branding_model=None,
+    export_stl=None,
 ):
     """
-    Generate a key model and open it in OpenSCAD (non-blocking).
+    Generate a key model.
 
     Args:
         profile_svg_path: path to the profile .svg file
@@ -400,6 +401,12 @@ def generate_key(
         thin_handle:      bool
         match_handle_connector: bool
         branding_model:   string or None — overrides the model label in branding
+        export_stl:       path string or None. When set, OpenSCAD is run headlessly
+                          and exports an STL to that path (blocking). When None,
+                          OpenSCAD is launched as a GUI (non-blocking).
+
+    Returns:
+        Path to the exported STL when export_stl is set, otherwise None.
     """
     # --- branding ---
     with open(os.path.join(BRAND_DIR, "branding-template.svg"), 'r') as f:
@@ -510,8 +517,19 @@ def generate_key(
     # --- profile DXF ---
     _ensure_profile_dxf(profile_svg_path)
 
-    # --- launch OpenSCAD (non-blocking) ---
-    subprocess.Popen([_find_tool("openscad"), os.path.join(BASE_DIR, "key.scad")])
+    # --- launch OpenSCAD ---
+    openscad = _find_tool("openscad")
+    key_scad = os.path.join(BASE_DIR, "key.scad")
+
+    if export_stl:
+        subprocess.run(
+            [openscad, "-o", export_stl, key_scad],
+            check=True,
+            cwd=BASE_DIR,
+        )
+        return export_stl
+    else:
+        subprocess.Popen([openscad, key_scad])
 
 
 def write_profile_scad(base_dir, name, tol, ph_base, khcx=None, khcz=None,

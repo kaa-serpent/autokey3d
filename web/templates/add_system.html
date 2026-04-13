@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Add System — AutoKey 3D</title>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css">
+</head>
+<body class="bg-light">
+<div class="container py-4" style="max-width:600px">
+  <div class="d-flex align-items-center gap-3 mb-4">
+    <a href="/" class="btn btn-outline-secondary btn-sm">← Back</a>
+    <h1 class="mb-0 h3">Add New System</h1>
+  </div>
+
+  <div id="alert-box"></div>
+
+  <form id="system-form">
+    <div class="mb-3">
+      <label class="form-label">System name <span class="text-muted small">(e.g. MY-LOCK1, letters/digits/-/_)</span></label>
+      <input id="name" type="text" class="form-control" required pattern="[A-Za-z0-9_\-]+" placeholder="MY-LOCK1">
+    </div>
+
+    <div class="row g-3 mb-3">
+      <div class="col-sm-6">
+        <label class="form-label">Key length — kl <span class="text-muted small">mm</span></label>
+        <input id="kl" type="number" step="0.01" class="form-control" required placeholder="e.g. 27">
+      </div>
+      <div class="col-sm-6">
+        <label class="form-label">Shoulder to first pin — aspace <span class="text-muted small">mm</span></label>
+        <input id="aspace" type="number" step="0.01" class="form-control" required placeholder="e.g. 4.42">
+      </div>
+    </div>
+
+    <div class="row g-3 mb-3">
+      <div class="col-sm-6">
+        <label class="form-label">Pin spacing — pinspace <span class="text-muted small">mm</span></label>
+        <input id="pinspace" type="number" step="0.01" class="form-control" required placeholder="e.g. 4.0">
+      </div>
+      <div class="col-sm-6">
+        <label class="form-label">Highest cut offset — hcut_offset</label>
+        <input id="hcut_offset" type="number" step="0.01" class="form-control" required placeholder="e.g. 4.66">
+        <div class="form-text">Used as: hcut = ph − 2·tol − <em>this value</em></div>
+      </div>
+    </div>
+
+    <div class="row g-3 mb-3">
+      <div class="col-sm-6">
+        <label class="form-label">Cut level spacing — cutspace <span class="text-muted small">mm</span></label>
+        <input id="cutspace" type="number" step="0.001" class="form-control" required placeholder="e.g. 0.44">
+      </div>
+      <div class="col-sm-6">
+        <label class="form-label">V-cut angle — cutangle <span class="text-muted small">degrees</span></label>
+        <input id="cutangle" type="number" step="0.1" class="form-control" required placeholder="e.g. 112">
+      </div>
+    </div>
+
+    <div class="mb-4">
+      <label class="form-label">Plateau width — platspace <span class="text-muted small">mm</span></label>
+      <input id="platspace" type="number" step="0.001" class="form-control" required placeholder="e.g. 0.0">
+    </div>
+
+    <button type="submit" class="btn btn-primary">Save System</button>
+  </form>
+</div>
+
+<script>
+document.getElementById('system-form').addEventListener('submit', async e => {
+  e.preventDefault();
+  const btn = e.target.querySelector('[type=submit]');
+  btn.disabled = true;
+
+  const fields = ['kl', 'aspace', 'pinspace', 'hcut_offset', 'cutspace', 'cutangle', 'platspace'];
+  const body = { name: document.getElementById('name').value.trim() };
+  for (const f of fields) body[f] = document.getElementById(f).value;
+
+  const res = await fetch('/api/add-system', {
+    method: 'POST',
+    headers: {'Content-Type': 'application/json'},
+    body: JSON.stringify(body),
+  });
+  const data = await res.json();
+
+  if (res.ok) {
+    window.location.href = '/';
+  } else {
+    document.getElementById('alert-box').innerHTML =
+      `<div class="alert alert-danger">${data.error}</div>`;
+    btn.disabled = false;
+  }
+});
+</script>
+</body>
+</html>
