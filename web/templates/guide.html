@@ -1,0 +1,125 @@
+{% extends "base.html" %}
+
+{% block title %}Profile Guide — AutoKey 3D{% endblock %}
+
+{% block content %}
+<div class="page-header">
+  <div class="container">
+    <h1><i class="bi bi-book me-2"></i>How to Add a New Profile</h1>
+    <p class="text-muted mb-0">Follow these steps to create an SVG keyway profile from a lock photo and import it into AutoKey 3D</p>
+  </div>
+</div>
+
+<div class="container" style="max-width:820px">
+
+  <!-- Step 1 -->
+  <div class="card mb-4">
+    <div class="card-body">
+      <div class="d-flex align-items-center gap-3 mb-3">
+        <span class="badge bg-primary rounded-pill fs-5 px-3 py-2">1</span>
+        <h2 class="h5 mb-0">Take a photo of the lock keyway</h2>
+      </div>
+      <p class="text-muted">
+        Place the lock face-up on a flat surface and take a clear, straight-on photo of the keyway.
+        Make sure the image is sharp and well-lit — you will trace over it, so detail matters.
+        Use a macro mode or get close enough so the keyway fills most of the frame.
+      </p>
+      <div class="text-center mt-3">
+        <img src="{{ url_for('static', filename='images/lockExamplePicture.jpg') }}"
+             class="img-fluid rounded border"
+             style="max-height:380px; object-fit:contain;"
+             alt="Example photo of a lock keyway">
+        <p class="text-muted small mt-2">Example: EVVA lock photographed straight-on</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- Step 2 -->
+  <div class="card mb-4">
+    <div class="card-body">
+      <div class="d-flex align-items-center gap-3 mb-3">
+        <span class="badge bg-primary rounded-pill fs-5 px-3 py-2">2</span>
+        <h2 class="h5 mb-0">Open the photo in Inkscape (or any SVG editor)</h2>
+      </div>
+      <p class="text-muted">
+        Open <a href="https://inkscape.org" target="_blank" rel="noopener">Inkscape</a> (free &amp; open-source) or any vector graphics tool that can export SVG.
+        Import your photo as a background layer: <strong>File → Import</strong>, then select your image.
+        Lock the image layer so you don't accidentally move it while tracing.
+      </p>
+      <div class="text-center mt-3">
+        <img src="{{ url_for('static', filename='images/InkskapeDrawingExample.png') }}"
+             class="img-fluid rounded border"
+             style="max-height:340px; object-fit:contain;"
+             alt="Lock photo imported into Inkscape">
+        <p class="text-muted small mt-2">The lock photo loaded as a reference layer in Inkscape</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- Step 3 -->
+  <div class="card mb-4">
+    <div class="card-body">
+      <div class="d-flex align-items-center gap-3 mb-3">
+        <span class="badge bg-primary rounded-pill fs-5 px-3 py-2">3</span>
+        <h2 class="h5 mb-0">Trace the keyway profile and export as SVG</h2>
+      </div>
+      <p class="text-muted">
+        On a new layer, use the <strong>Bezier / Pen tool</strong> (or the Node tool) to draw the outline of the keyway.
+        Trace the inner shape of the lock slot as a closed path — this silhouette is what AutoKey 3D uses to generate the key blank.
+      </p>
+      <ul class="text-muted mb-3">
+        <li>Keep only the path layer visible when you export — hide the photo layer.</li>
+        <li>The path must be a single closed shape filled with black.</li>
+        <li>Any reasonable scale works; the app normalises dimensions using the <em>ph_base</em> parameter.</li>
+      </ul>
+      <p class="text-muted">
+        When done: <strong>File → Save As</strong> and choose <em>Plain SVG</em> (or <em>Inkscape SVG</em> — both work).
+      </p>
+      <div class="text-center mt-3">
+        <img src="{{ url_for('static', filename='images/NewProfileExample.png') }}"
+             class="img-fluid rounded border"
+             style="max-height:340px; object-fit:contain;"
+             alt="Saving the traced profile as an SVG file">
+        <p class="text-muted small mt-2">Saving the traced keyway shape as an SVG file</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- Step 4 -->
+  <div class="card mb-4">
+    <div class="card-body">
+      <div class="d-flex align-items-center gap-3 mb-3">
+        <span class="badge bg-primary rounded-pill fs-5 px-3 py-2">4</span>
+        <h2 class="h5 mb-0">Import the SVG in the Profiles tab</h2>
+      </div>
+      <p class="text-muted">
+        Go to <a href="/profiles">Profiles</a> → <strong>Add Profile</strong>.
+        Fill in a name, upload your SVG, and set the required parameters:
+      </p>
+      <ul class="text-muted mb-3">
+        <li><strong>Tolerance (tol)</strong> — extra clearance in mm so the key slides into the lock smoothly (start with <code>0.2</code>).</li>
+        <li><strong>Height base (ph_base)</strong> — the real-world height of the profile in mm (measure the keyway opening with calipers).</li>
+      </ul>
+      <p class="text-muted">Click <strong>Save Profile</strong> and your new profile will appear in the list, ready to use when generating keys.</p>
+      <div class="text-center mt-3">
+        <img src="{{ url_for('static', filename='images/ImportSVGExample.png') }}"
+             class="img-fluid rounded border"
+             style="max-height:420px; object-fit:contain;"
+             alt="Add Profile form with SVG uploaded">
+        <p class="text-muted small mt-2">The Add Profile form with the SVG imported and parameters filled in</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- CTA -->
+  <div class="d-flex gap-3 mb-5">
+    <a href="/add-profile" class="btn btn-primary">
+      <i class="bi bi-plus-lg me-1"></i>Add a Profile now
+    </a>
+    <a href="/profiles" class="btn btn-outline-secondary">
+      <i class="bi bi-key-fill me-1"></i>View Profiles
+    </a>
+  </div>
+
+</div>
+{% endblock %}
