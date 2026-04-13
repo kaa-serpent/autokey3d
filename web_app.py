@@ -89,6 +89,11 @@ def page_add_system():
     return render_template("add_system.html", active_page="systems")
 
 
+@app.route("/guide")
+def page_guide():
+    return render_template("guide.html", active_page="guide")
+
+
 # ── API: list all ─────────────────────────────────────────────────────────────
 
 @app.route("/api/profiles")
