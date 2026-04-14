@@ -17,3 +17,8 @@ branding/branding.dxf
 profile.dxf
 profile.eps
 settings.scad
+
+*.dxf
+*.scad
+*.svg
+profiles.json
