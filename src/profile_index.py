@@ -231,3 +231,13 @@ class ProfileIndex:
                 s.update(updates)
                 break
         self.save()
+
+    def remove_profile(self, name):
+        """Remove a profile entry and save."""
+        self.profiles = [p for p in self.profiles if p["name"] != name]
+        self.save()
+
+    def remove_system(self, name):
+        """Remove a system entry and save."""
+        self.systems = [s for s in self.systems if s["name"] != name]
+        self.save()

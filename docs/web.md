@@ -142,6 +142,13 @@ Form fields: name, `kl`, `aspace`, `pinspace`, `hcut_offset`, `cutspace`, `cutan
 | `PUT` | `/api/profiles/<name>` | JSON | Update profile params → rewrite `.scad` + `profiles.json` |
 | `PUT` | `/api/systems/<name>` | JSON | Update system params → rewrite `.scad` + `profiles.json` |
 
+### Delete
+
+| Method | Route | Description |
+|--------|-------|-------------|
+| `DELETE` | `/api/profiles/<name>` | Remove profile from `profiles.json` and delete `.svg`, `.scad`, `.dxf` files |
+| `DELETE` | `/api/systems/<name>` | Remove system from `profiles.json` and delete its `.scad` file |
+
 ### Generation
 
 | Method | Route | Description |

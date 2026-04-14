@@ -180,20 +180,6 @@
       "default_system": "ZISK6"
     },
     {
-      "name": "evvatest",
-      "svg_path": "profiles/evvatest.svg",
-      "scad_path": "profiles/evvatest.scad",
-      "dxf_path": "profiles/evvatest.dxf",
-      "tol": 0.2,
-      "ph_base": 7.6,
-      "ph_has_tol": true,
-      "khcx": null,
-      "khcz": null,
-      "thin_handle": false,
-      "match_handle": false,
-      "default_system": "evva"
-    },
-    {
       "name": "ev",
       "svg_path": "profiles/ev.svg",
       "scad_path": "profiles/ev.scad",
@@ -205,6 +191,20 @@
       "khcz": null,
       "thin_handle": false,
       "match_handle": false,
+      "default_system": "evva"
+    },
+    {
+      "name": "EVVABeffroi1er",
+      "svg_path": "profiles/EVVABeffroi1er.svg",
+      "scad_path": "profiles/EVVABeffroi1er.scad",
+      "dxf_path": "profiles/EVVABeffroi1er.dxf",
+      "tol": 0.2,
+      "ph_base": 8.0,
+      "ph_has_tol": true,
+      "khcx": null,
+      "khcz": null,
+      "thin_handle": false,
+      "match_handle": true,
       "default_system": "evva"
     }
   ],

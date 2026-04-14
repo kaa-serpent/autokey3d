@@ -335,6 +335,41 @@ def api_stl_inline(job_id):
 
 # ── API: add profile / system ─────────────────────────────────────────────────
 
+@app.route("/api/profiles/<name>", methods=["DELETE"])
+def api_profile_delete(name):
+    idx = _load_index()
+    profile = next((p for p in idx.profiles if p["name"] == name), None)
+    if profile is None:
+        return jsonify({"error": f"Unknown profile: {name}"}), 404
+
+    for rel in ("svg_path", "scad_path", "dxf_path"):
+        path = profile.get(rel)
+        if path:
+            full = os.path.join(BASE_DIR, path)
+            if os.path.isfile(full):
+                os.remove(full)
+
+    idx.remove_profile(name)
+    return jsonify({"ok": True})
+
+
+@app.route("/api/systems/<name>", methods=["DELETE"])
+def api_system_delete(name):
+    idx = _load_index()
+    system = next((s for s in idx.systems if s["name"] == name), None)
+    if system is None:
+        return jsonify({"error": f"Unknown system: {name}"}), 404
+
+    scad_path = system.get("scad_path")
+    if scad_path:
+        full = os.path.join(BASE_DIR, scad_path)
+        if os.path.isfile(full):
+            os.remove(full)
+
+    idx.remove_system(name)
+    return jsonify({"ok": True})
+
+
 @app.route("/api/add-profile", methods=["POST"])
 def api_add_profile():
     import shutil
